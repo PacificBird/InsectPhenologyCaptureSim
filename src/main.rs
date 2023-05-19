@@ -72,6 +72,7 @@ fn simulate(
     let mut eggs: u32 = 0;
     let mut mating_pop: u32 = 0;
     let mut mating_now: u32 = 0;
+    let mut pop_active_last = 0;
 
     deg_day_range
         .into_iter()
@@ -85,18 +86,18 @@ fn simulate(
                 .max(0.0);
             pop_inactive -= activated;
             pop_active += activated as u32;
-            mating_pop += (activated / 2.0) as u32;
+            // mating_pop += (activated / 2.0) as u32;
 
             avg_age += 1f64;
             avg_age *= if pop_active != 0 {
-                1f64 - (activated / pop_active as f64)
+                (pop_active_last as f64 / pop_active as f64)
             } else {
                 0.0
             };
 
             let mut rng = thread_rng();
             let (captured, died): (u32, u32) =
-                (0..=pop_active).fold((0u32, 0u32), |(cap, ded), _| {
+                (0..pop_active).fold((0u32, 0u32), |(cap, ded), _| {
                     if rng.gen::<f64>() <= prob_detection {
                         (cap + 1, ded)
                     } else if rng.gen::<f64>()
@@ -108,16 +109,17 @@ fn simulate(
                     }
                 });
 
-            mating_now = (mating_pop as f64
-                * integrate::quad5(curried_normal(40.0, 2.0), avg_age - 0.5, avg_age + 0.5))
+            mating_now = ((pop_active as f64 / 2.0)
+                * integrate::quad5(curried_normal(40.0, 8.0), avg_age - 0.5, avg_age + 0.5))
             .round() as u32;
-            // if x % 5 == 0 {
-            //     println!(
-            //         "{x}, {activated}, {avg_age}, {}",
-            //         (1f64 - (activated / (pop_0 as f64 - pop_inactive)))
-            //     );
-            // }
-            mating_pop.checked_sub(mating_now).unwrap_or(0);
+            if x % 5 == 0 {
+                println!(
+                    "{x}, activated: {}, age: {avg_age}, proprtion: {}",
+                    activated.round(),
+                    (1f64 - (activated.round() / pop_active as f64))
+                );
+            }
+            // mating_pop = mating_pop.checked_sub(mating_now).unwrap_or(0);
             eggs += (15.0 * mating_now as f64) as u32;
 
             // println!("{},{},{},{}", pop_active, captured, died, avg_age);
@@ -125,6 +127,7 @@ fn simulate(
             pop_captured += captured;
             pop_active = pop_active.checked_sub(died).unwrap_or(0);
 
+            pop_active_last = pop_active;
             // avg_age *= ((pop_active != 0) as i32) as f64;
 
             DataPoint {
