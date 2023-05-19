@@ -74,6 +74,8 @@ fn simulate(
     let mut mating_now: u32 = 0;
     let mut pop_active_last = 0;
 
+    let mating_chance = 0.05;
+
     deg_day_range
         .into_iter()
         .map(|x| {
@@ -109,9 +111,7 @@ fn simulate(
                     }
                 });
 
-            mating_now = ((pop_active as f64 / 2.0)
-                * integrate::quad5(curried_normal(40.0, 8.0), avg_age - 0.5, avg_age + 0.5))
-            .round() as u32;
+            mating_now = (pop_active as f64 / 2.0) * mating_chance * (1.0 / (1.0 + f64::exp(-0.05 * (x - 0.0))));
             if x % 5 == 0 {
                 println!(
                     "{x}, activated: {}, age: {avg_age}, proprtion: {}",
@@ -142,7 +142,7 @@ fn simulate(
 
 #[allow(dead_code)]
 fn example_cdf(x: f64) -> f64 {
-    100.0 / (1.0 + E.powf(-0.05 * (x - 200.0)))
+    100.0 / (1.0 + f64::exp(-0.05 * (x - 200.0)))
 }
 
 fn jones_wiman_2012(x: f64) -> f64 {
