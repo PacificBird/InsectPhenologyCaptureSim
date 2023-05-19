@@ -23,14 +23,25 @@ impl Display for DataPoint {
     }
 }
 
+#[allow(dead_code)]
+enum ProbDist<'a> {
+    CDF(&'a dyn Fn(f64) -> f64),
+    PDF(&'a dyn Fn(f64) -> f64),
+}
+
 fn main() {
     // let pop_range = 1_000..=100_000;
     // let delta_pop = 100;
     // let detection_range = 0.0025..=0.050;
     // let delta_detection = 0.0005;
-    let degree_day_range = 0..=400;
+    let degree_day_range = 0..=1000;
 
-    let test_0 = simulate(1000000, 0.00025, degree_day_range.clone(), &example_cdf);
+    let test_0 = simulate(
+        100000,
+        0.00025,
+        degree_day_range.clone(),
+        ProbDist::PDF(&jones_wiman_2012),
+    );
     let test_0_csv = test_0
         .into_iter()
         .enumerate()
@@ -51,7 +62,7 @@ fn simulate(
     pop_0: u32,
     prob_detection: f64,
     deg_day_range: std::ops::RangeInclusive<u32>,
-    cdf: impl Fn(f64) -> f64,
+    emergence: ProbDist,
 ) -> Vec<DataPoint> {
     let mut pop_inactive = pop_0 as f64;
     // pop_inactive *= 1.55;
@@ -65,14 +76,23 @@ fn simulate(
     deg_day_range
         .into_iter()
         .map(|x| {
-            // !TODO: Make option for using a PDF directly, or continue using CDF, possibly using an enum?
-            let activated = (pop_inactive * diff(x as f64, &cdf)) / 100.0;
+            let activated = ((pop_inactive
+                * match emergence {
+                    ProbDist::CDF(cdf) => diff(x as f64, &*cdf),
+                    ProbDist::PDF(pdf) => pdf(x as f64),
+                })
+                / 100.0)
+                .max(0.0);
             pop_inactive -= activated;
             pop_active += activated as u32;
             mating_pop += (activated / 2.0) as u32;
 
             avg_age += 1f64;
-            avg_age *= 1f64 - (activated / pop_active as f64);
+            avg_age *= if pop_active != 0 {
+                1f64 - (activated / pop_active as f64)
+            } else {
+                0.0
+            };
 
             let mut rng = thread_rng();
             let (captured, died): (u32, u32) =
@@ -91,12 +111,12 @@ fn simulate(
             mating_now = (mating_pop as f64
                 * integrate::quad5(curried_normal(40.0, 2.0), avg_age - 0.5, avg_age + 0.5))
             .round() as u32;
-            if x % 3 == 0 {
-                println!(
-                    "{x}, {activated}, {avg_age}, {}",
-                    (1f64 - (activated / (pop_0 as f64 - pop_inactive)))
-                );
-            }
+            // if x % 5 == 0 {
+            //     println!(
+            //         "{x}, {activated}, {avg_age}, {}",
+            //         (1f64 - (activated / (pop_0 as f64 - pop_inactive)))
+            //     );
+            // }
             mating_pop.checked_sub(mating_now).unwrap_or(0);
             eggs += (15.0 * mating_now as f64) as u32;
 
@@ -117,8 +137,22 @@ fn simulate(
         .collect::<Vec<DataPoint>>()
 }
 
+#[allow(dead_code)]
 fn example_cdf(x: f64) -> f64 {
     100.0 / (1.0 + E.powf(-0.05 * (x - 200.0)))
+}
+
+fn jones_wiman_2012(x: f64) -> f64 {
+    let gamma = 1.0737;
+    let delta = 1.2349;
+    let lambda = 577.2;
+    let zeta = 69.0;
+    let z = (x - zeta) / lambda;
+
+    (100.0
+        * (delta / (lambda * (2.0 * PI).sqrt() * z * (1.0 - z)))
+        * f64::exp(-0.5 * (gamma + (delta * (z / (1.0 - z)).ln())).powi(2)))
+    .max(0.0)
 }
 
 fn normal(mean: f64, stdev: f64, x: f64) -> f64 {
