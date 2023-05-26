@@ -164,15 +164,35 @@ fn example_cdf(x: f64) -> f64 {
 }
 
 fn jones_wiman_2012(x: f64) -> f64 {
-    let gamma = 1.0737;
-    let delta = 1.2349;
-    let lambda = 577.2;
-    let zeta = 69.0;
-    let z = (x - zeta) / lambda;
+    let gamma_0 = 1.0737;
+    let delta_0 = 1.2349;
+    let lambda_0 = 577.2;
+    let zeta_0 = 69.0;
+    let z_0 = (x - zeta_0) / lambda_0;
+
+    let gamma_1 = 0.3964;
+    let delta_1 = 1.4682;
+    let lambda_1 = 825.6;
+    let zeta_1 = 494.8;
+    let z_1 = (x - zeta_1) / lambda_1;
+
+    let gamma_2 = 0.0876;
+    let delta_2 = 1.0923;
+    let lambda_2 = 746.9;
+    let zeta_2 = 1101.2;
+    let z_2 = (x - zeta_2) / lambda_2;
 
     (100.0
-        * (delta / (lambda * (2.0 * PI).sqrt() * z * (1.0 - z)))
-        * f64::exp(-0.5 * (gamma + (delta * (z / (1.0 - z)).ln())).powi(2)))
+        * (delta_0 / (lambda_0 * (2.0 * PI).sqrt() * z_0 * (1.0 - z_0)))
+        * f64::exp(-0.5 * (gamma_0 + (delta_0 * (z_0 / (1.0 - z_0)).ln())).powi(2)))
+    .max(0.0) + 
+    (100.0
+        * (delta_1 / (lambda_1 * (2.0 * PI).sqrt() * z_1 * (1.0 - z_1)))
+        * f64::exp(-0.5 * (gamma_1 + (delta_1 * (z_1 / (1.0 - z_1)).ln())).powi(2)))
+    .max(0.0) + 
+    (100.0
+        * (delta_2 / (lambda_2 * (2.0 * PI).sqrt() * z_2 * (1.0 - z_2)))
+        * f64::exp(-0.5 * (gamma_2 + (delta_2 * (z_2 / (1.0 - z_2)).ln())).powi(2)))
     .max(0.0)
 }
 
