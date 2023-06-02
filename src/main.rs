@@ -39,7 +39,14 @@ enum ProbDist<'a> {
 }
 
 fn main() {
-    println!("{}", trapz(jones_wiman_2012_1, 0.0, 1500.0, 1500));
+    let constant_term = jones_wiman_2012_1(625.0)
+        - trapz(
+            |y| diff(y, jones_wiman_2012_1),
+            625.0 - 0.5,
+            625.0 + 0.5,
+            50,
+        );
+    println!("{constant_term}");
     // println!("{}", fit_egg_value(0.0, 15.0));
     // println!("{}", fit_egg_value(40.0, 9.7));
     // println!("{}", fit_egg_value(50.0, 8.6));
@@ -94,7 +101,8 @@ fn simulate(
     let mut avg_age_0 = 0.0;
     let mut avg_age_1 = 0.0;
     let mut avg_age_2 = 0.0;
-    let mut eggs_1 = 1_000.0;
+    let mut eggs_1 = 0.0;
+    let mut eggs_1_total = 0.0;
     let mut eggs_2 = 0.0;
     let mut pop_active_last_0 = 0.0;
     let mut pop_active_last_1 = 0.0;
@@ -129,11 +137,12 @@ fn simulate(
                 * adjusted_logistic(delay_steepness, mating_delay, avg_age_0);
 
             eggs_1 += egg_multiplier * mating_now_0 as f64;
+            eggs_1_total += egg_multiplier * mating_now_0 as f64;
 
             pop_captured += pop_active_0 * prob_detection;
             pop_active_0 = pop_active_0
                 * (1.0 - prob_detection)
-                * (f64::exp(0.059 * (1.0 - f64::exp(0.044 * avg_age_0))));
+                * (f64::exp(0.058 * (1.0 - f64::exp(0.0448 * avg_age_0))));
 
             // mating delay debug stuff
 
@@ -148,7 +157,7 @@ fn simulate(
             // avg_age *= ((pop_active != 0) as i32) as f64;
 
             let hatched_1 = ((
-                1_000.0 as f64
+                eggs_1_total as f64
                     * match generation_1 {
                         ProbDist::CDF(cdf) => diff(x as f64, &*cdf),
                         ProbDist::PDF(pdf) => pdf(x as f64),
