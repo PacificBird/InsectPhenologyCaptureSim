@@ -1,7 +1,5 @@
-use compute::integrate::trapz;
-use rand::prelude::*;
 use std::{
-    f64::consts::{E, PI},
+    f64::consts::PI,
     fmt,
     fmt::{Display, Formatter},
     io::Write,
@@ -39,19 +37,11 @@ enum ProbDist<'a> {
 }
 
 fn main() {
-    let constant_term = jones_wiman_2012_1(625.0)
-        - trapz(
-            |y| diff(y, jones_wiman_2012_1),
-            625.0 - 0.5,
-            625.0 + 0.5,
-            50,
-        );
-    println!("{constant_term}");
     // println!("{}", fit_egg_value(0.0, 15.0));
     // println!("{}", fit_egg_value(40.0, 9.7));
     // println!("{}", fit_egg_value(50.0, 8.6));
 
-    let degree_day_range = 0..=1800;
+    let degree_day_range = 0..=2200;
     let mating_delay = 50.0;
     let test_0 = simulate(
         100_000,
@@ -104,6 +94,7 @@ fn simulate(
     let mut eggs_1 = 0.0;
     let mut eggs_1_total = 0.0;
     let mut eggs_2 = 0.0;
+    let mut eggs_2_total = 0.0;
     let mut pop_active_last_0 = 0.0;
     let mut pop_active_last_1 = 0.0;
     let mut pop_active_last_2 = 0.0;
@@ -122,7 +113,6 @@ fn simulate(
                 .max(0.0);
             pop_inactive -= activated;
             pop_active_0 += activated;
-            // mating_pop += (activated / 2.0) as u32;
 
             avg_age_0 += 1.0
                 * if pop_active_0 != 0.0 {
@@ -144,26 +134,22 @@ fn simulate(
                 * (1.0 - prob_detection)
                 * (f64::exp(0.058 * (1.0 - f64::exp(0.0448 * avg_age_0))));
 
-            // mating delay debug stuff
-
-            if x % 5 == 0 {
-                println!(
-                    "{x}, {pop_active_0}, mating_now: {mating_now_0}, age: {avg_age_0}, proprtion: {}",
-                    pop_active_last_0 / pop_active_0
-                );
-            }
+            // MATING DELAY DEBUG STUFF
+            // if x % 5 == 0 {
+            //     println!(
+            //         "{x}, {pop_active_0}, mating_now: {mating_now_0}, age: {avg_age_0}, proprtion: {}",
+            //         pop_active_last_0 / pop_active_0
+            //     );
+            // }
 
             pop_active_last_0 = pop_active_0;
-            // avg_age *= ((pop_active != 0) as i32) as f64;
 
-            let hatched_1 = ((
-                eggs_1_total as f64
-                    * match generation_1 {
-                        ProbDist::CDF(cdf) => diff(x as f64, &*cdf),
-                        ProbDist::PDF(pdf) => pdf(x as f64),
-                    }
-                // * egg_1_correction
-            ) / 1000.0)
+            let hatched_1 = ((eggs_1_total as f64
+                * match generation_1 {
+                    ProbDist::CDF(cdf) => diff(x as f64, &*cdf),
+                    ProbDist::PDF(pdf) => pdf(x as f64),
+                })
+                / 100.0)
                 .max(0.0);
             eggs_1 -= hatched_1;
             pop_active_1 += hatched_1;
@@ -175,32 +161,44 @@ fn simulate(
                     0.0
                 };
 
-            // let mut rng = thread_rng();
-            // let (captured, died): (u32, u32) =
-            //     (0..pop_active_1).fold((0u32, 0u32), |(cap, ded), _| {
-            //         if rng.gen::<f64>() <= prob_detection {
-            //             (cap + 1, ded)
-            //         } else if rng.gen::<f64>()
-            //             >= E.powf(0.059 * (1f64 - E.powf(0.044 * avg_age_1 as f64)))
-            //         {
-            //             (cap, ded + 1)
-            //         } else {
-            //             (cap, ded)
-            //         }
-            //     });
-
-            let mating_now_1 = ((pop_active_1 as f64 / 2.0) * mating_chance);
+            let mating_now_1 = (pop_active_1 as f64 / 2.0) * mating_chance;
 
             eggs_2 += egg_coefficient(0.0) * mating_now_1;
+            eggs_2_total += egg_coefficient(0.0) * mating_now_1;
 
-            // pop_active_1 -= captured;
-            // pop_captured += captured;
-            // pop_active_1 = pop_active_1.checked_sub(died).unwrap_or(0);
             pop_active_1 = pop_active_1
                 * (1.0 - prob_detection)
                 * (f64::exp(0.059 * (1.0 - f64::exp(0.044 * avg_age_1))));
 
             pop_active_last_1 = pop_active_1;
+
+            let hatched_2 = ((eggs_2_total as f64
+                * match generation_2 {
+                    ProbDist::CDF(cdf) => diff(x as f64, &*cdf),
+                    ProbDist::PDF(pdf) => pdf(x as f64),
+                })
+                / 100.0)
+                .max(0.0);
+            eggs_2 -= hatched_2;
+            pop_active_2 += hatched_2;
+
+            avg_age_2 += 1.0
+                * if pop_active_2 != 0.0 {
+                    pop_active_last_2 as f64 / pop_active_2 as f64
+                } else {
+                    0.0
+                };
+
+            // let mating_now_2 = (pop_active_2 as f64 / 2.0) * mating_chance;
+
+            // eggs_2 += egg_coefficient(0.0) * mating_now_1;
+            // eggs_2_total += egg_coefficient(0.0) * mating_now_1;
+
+            pop_active_2 = pop_active_2
+                * (1.0 - prob_detection)
+                * (f64::exp(0.059 * (1.0 - f64::exp(0.044 * avg_age_2))));
+
+            pop_active_last_2 = pop_active_2;
 
             DataPoint {
                 pop_captured,
@@ -238,7 +236,7 @@ fn jones_wiman_2012_1(x: f64) -> f64 {
     let zeta_1 = 494.8;
     let z_1 = (x - zeta_1) / lambda_1;
 
-    (1000.0
+    (100.0
         * (delta_1 / (lambda_1 * (2.0 * PI).sqrt() * z_1 * (1.0 - z_1)))
         * f64::exp(-0.5 * (gamma_1 + (delta_1 * (z_1 / (1.0 - z_1)).ln())).powi(2)))
     .max(0.0)
