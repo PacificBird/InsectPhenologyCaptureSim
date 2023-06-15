@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 compute = "0.2.3"
 rand = "0.8.5"
+[lib]
+path="src/lib.rs"
