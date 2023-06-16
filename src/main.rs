@@ -1,10 +1,20 @@
 use std::io::Write;
 use InsectPhenologyCaptureSim::{
-    egg_coefficient, fitting::fit_pop_growth, simulate, JW_EMERGENCES,
+    egg_coefficient,
+    fitting::{fit_pop_growth, FittingData},
+    simulate, JW_EMERGENCES,
 };
 
 fn main() {
-    println!("fitted vals: {:#?}", fit_pop_growth());
+    println!(
+        "fitted vals: {:#?}",
+        fit_pop_growth(FittingData::new_many_from_calendar_day(
+            [0.0, 40.0, 50.0],
+            [55.2, 57.3, 66.5],
+            [15.0, 9.7, 8.6],
+            12.0,
+        ))
+    );
 
     let mating_delay = 0.0;
     let test_0 = simulate(
