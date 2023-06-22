@@ -1,74 +1,11 @@
-use std::{
-    f64::consts::PI,
-    fmt,
-    fmt::{Debug, Display, Formatter},
-};
+use std::f64::consts::PI;
 
+pub mod datapoint;
 pub mod fitting;
-// pub mod multisim;
+pub mod multisim;
 
-#[derive(Debug)]
-pub struct DataPoint {
-    pub pop_captured: f64,
-    pub pop_active: Vec<f64>,
-    pub eggs: Vec<f64>,
-    pub eggs_total: Vec<f64>,
-}
-impl Display for DataPoint {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let pop_active_string: String = self
-            .pop_active
-            .clone()
-            .into_iter()
-            .fold("".to_owned(), |acc, x| format!("{}{},", acc, x));
+pub use datapoint::*;
 
-        let eggs_string: String = self
-            .eggs
-            .clone()
-            .into_iter()
-            .fold("".to_owned(), |acc, x| format!("{}{},", acc, x));
-
-        let eggs_total_string: String = self
-            .eggs_total
-            .clone()
-            .into_iter()
-            .fold("".to_owned(), |acc, x| format!("{}{},", acc, x));
-
-        write!(
-            f,
-            "{},{}{}{}",
-            self.pop_captured, pop_active_string, eggs_string, eggs_total_string
-        )
-    }
-}
-impl DataPoint {
-    pub fn csv_headers(&self) -> String {
-        let pop_headers = self
-            .pop_active
-            .clone()
-            .into_iter()
-            .enumerate()
-            .fold("".to_owned(), |acc, (i, _)| {
-                format!("{acc}pop_active_{},", i)
-            });
-        let egg_headers = self
-            .eggs
-            .clone()
-            .into_iter()
-            .enumerate()
-            .fold("".to_owned(), |acc, (i, _)| format!("{acc}eggs_{},", i));
-        let egg_total_headers = self
-            .eggs_total
-            .clone()
-            .into_iter()
-            .enumerate()
-            .fold("".to_owned(), |acc, (i, _)| {
-                format!("{acc}eggs_total_{},", i)
-            });
-
-        format!("dd,captured,{pop_headers}{egg_headers}{egg_total_headers}")
-    }
-}
 pub fn diff(x: f64, cdf: impl Fn(f64) -> f64) -> f64 {
     let h = 0.001;
     (cdf(x + h) - cdf(x)) / h
@@ -81,67 +18,70 @@ pub enum ProbDist<'a> {
     PDF(&'a dyn Fn(f64) -> f64),
 }
 
-pub fn simulate(
+pub fn simulate<const NUM_GEN: usize>(
     pop_0: u32,
     prob_detection: f64,
     deg_day_range: std::ops::RangeInclusive<u32>,
-    emergences: Vec<ProbDist>,
+    emergences: [ProbDist; NUM_GEN],
     mating_delay: f64,
     egg_multiplier: f64,
-) -> Vec<DataPoint> {
-    let num_generations = emergences.len();
-    let mut pop_active: Vec<f64> = (0..num_generations).into_iter().map(|_| 0.0).collect();
+) -> DataPointFrame<NUM_GEN> {
+    let mut pop_active = [0.0; NUM_GEN];
     let mut pop_captured = 0.0;
-    let mut avg_age: Vec<f64> = (0..num_generations).into_iter().map(|_| 0.0).collect();
-    let mut eggs: Vec<f64> = (0..num_generations + 1).into_iter().map(|_| 0.0).collect();
+    let mut avg_age = [0.0; NUM_GEN];
+    let mut eggs = [0.0; NUM_GEN];
     eggs[0] = pop_0 as f64;
-    let mut eggs_total: Vec<f64> = (0..num_generations + 1).into_iter().map(|_| 0.0).collect();
+    let mut eggs_total = [0.0; NUM_GEN];
     eggs_total[0] = pop_0 as f64;
-    let mut pop_active_last: Vec<f64> = (0..num_generations).into_iter().map(|_| 0.0).collect();
+    let mut pop_active_last = [0.0; NUM_GEN];
 
     let mating_chance = 0.45;
 
-    deg_day_range
-        .into_iter()
-        .map(|x| {
-            for generation in (0..num_generations).into_iter() {
-                let activated = (eggs_total[generation]
-                    * match emergences[generation] {
-                        ProbDist::CDF(cdf) => diff(x as f64, &*cdf),
-                        ProbDist::PDF(pdf) => pdf(x as f64),
-                    })
-                .max(0.0);
-                eggs[generation] -= activated;
-                pop_active[generation] += activated;
-                avg_age[generation] += 1.0
-                    * if pop_active[generation] != 0.0 {
-                        pop_active_last[generation] / pop_active[generation]
-                    } else {
-                        0.0
-                    };
-                let delay_steepness = 3.0;
-                let mating_now = (pop_active[generation] / 2.0)
-                    * mating_chance
-                    * adjusted_logistic(delay_steepness, mating_delay, avg_age[generation]);
+    DataPointFrame(
+        deg_day_range
+            .into_iter()
+            .map(|x| {
+                for generation in (0..NUM_GEN).into_iter() {
+                    let activated = (eggs_total[generation]
+                        * match emergences[generation] {
+                            ProbDist::CDF(cdf) => diff(x as f64, &*cdf),
+                            ProbDist::PDF(pdf) => pdf(x as f64),
+                        })
+                    .max(0.0);
+                    eggs[generation] -= activated;
+                    pop_active[generation] += activated;
+                    avg_age[generation] += 1.0
+                        * if pop_active[generation] != 0.0 {
+                            pop_active_last[generation] / pop_active[generation]
+                        } else {
+                            0.0
+                        };
+                    let delay_steepness = 3.0;
+                    let mating_now = (pop_active[generation] / 2.0)
+                        * mating_chance
+                        * adjusted_logistic(delay_steepness, mating_delay, avg_age[generation]);
 
-                eggs[generation + 1] += egg_multiplier * mating_now;
-                eggs_total[generation + 1] += egg_multiplier * mating_now;
+                    if generation + 1 < NUM_GEN {
+                        eggs[generation + 1] += egg_multiplier * mating_now;
+                        eggs_total[generation + 1] += egg_multiplier * mating_now;
+                    }
 
-                pop_captured += pop_active[generation] * prob_detection;
-                pop_active[generation] = pop_active[generation]
-                    * (1.0 - prob_detection)
-                    * (f64::exp(0.058 * (1.0 - f64::exp(0.0448 * avg_age[generation]))));
-                pop_active_last[generation] = pop_active[generation];
-            }
+                    pop_captured += pop_active[generation] * prob_detection;
+                    pop_active[generation] = pop_active[generation]
+                        * (1.0 - prob_detection)
+                        * (f64::exp(0.058 * (1.0 - f64::exp(0.0448 * avg_age[generation]))));
+                    pop_active_last[generation] = pop_active[generation];
+                }
 
-            DataPoint {
-                pop_captured,
-                pop_active: pop_active.clone(),
-                eggs: eggs.clone(),
-                eggs_total: eggs_total.clone(),
-            }
-        })
-        .collect::<Vec<DataPoint>>()
+                DataPoint {
+                    pop_captured,
+                    pop_active: pop_active.clone(),
+                    eggs: eggs.clone(),
+                    eggs_total: eggs_total.clone(),
+                }
+            })
+            .collect::<Vec<DataPoint<NUM_GEN>>>(),
+    )
 }
 
 #[allow(dead_code)]
@@ -190,36 +130,6 @@ pub const JW_EMERGENCES: [ProbDist; 3] = [
 
 pub fn adjusted_logistic(steepness: f64, translation: f64, x: f64) -> f64 {
     1.0 / (1.0 + f64::exp(-1.0 * steepness * (x as f64 - translation + (2.2 / steepness))))
-}
-
-#[allow(dead_code)]
-pub fn fit_egg_value(delay: f64, target: f64) -> f64 {
-    let mut fit = 1.0;
-    let mut net_repr_rate = 0.0;
-    while (net_repr_rate - target).abs() > 0.01 {
-        let result = simulate(
-            100_000,
-            0.0,
-            0..=1000,
-            vec![
-                ProbDist::PDF(&jones_wiman_2012_0),
-                ProbDist::PDF(&jones_wiman_2012_1),
-                ProbDist::PDF(&jones_wiman_2012_2),
-            ],
-            delay,
-            fit,
-        )[1000]
-            .eggs
-            .clone();
-
-        let eggs = result.into_iter().sum::<f64>() as f64;
-        net_repr_rate = eggs / 100_000.0;
-        println!("fit: {fit}, eggs: {eggs}, repr_rate: {net_repr_rate}");
-
-        fit *= target / net_repr_rate;
-    }
-
-    fit
 }
 
 pub fn egg_coefficient(delay: f64) -> f64 {
