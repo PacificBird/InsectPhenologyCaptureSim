@@ -1,3 +1,4 @@
+#![feature(impl_trait_in_assoc_type)]
 use std::f64::consts::PI;
 
 pub mod datapoint;
