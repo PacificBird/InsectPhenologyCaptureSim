@@ -1,6 +1,7 @@
 use std::io::Write;
 use InsectPhenologyCaptureSim::{
     egg_coefficient,
+    multisim::{multisim, MultiParam},
     // fitting::{fit_pop_growth, FittingData},
     simulate,
     JW_EMERGENCES,
@@ -26,15 +27,19 @@ fn main() {
         mating_delay,
         egg_coefficient(mating_delay),
     );
-    let test_0_headers = test_0.0.get(1).unwrap().csv_headers();
-    let test_0_csv = test_0
-        .0
-        .into_iter()
-        .enumerate()
-        .map(|(idx, x)| format!("{},{}\n", idx, x.to_string()))
-        .reduce(|acc, row| format!("{}{}", acc, row))
-        .unwrap();
-    let test_0_csv = format!("{}\n{}", test_0_headers, test_0_csv);
+    let test_0_csv = test_0.to_csv_string();
     let mut file_0 = std::fs::File::create("test_0.csv").unwrap();
     writeln!(&mut file_0, "{}", test_0_csv).expect("Couldn't write test_0.csv");
+
+    let test_1 = multisim(
+        MultiParam::Range(100.0..=100_000.0, 10),
+        MultiParam::Constant(0.05),
+        0..=2200,
+        JW_EMERGENCES,
+        MultiParam::Range(0.0..=70.0, 3),
+        egg_coefficient,
+    );
+    let test_1_csv = test_1.to_csv_string();
+    let mut file_1 = std::fs::File::create("test_1.csv").unwrap();
+    writeln!(&mut file_1, "{}", test_1_csv).expect("Couldn't write test_0.csv");
 }
