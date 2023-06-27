@@ -80,6 +80,16 @@ impl<const NUM_GEN: usize> TaggedDataPointFrame<NUM_GEN> {
     }
 }
 
+impl<const NUM_GEN: usize> IntoIterator for TaggedDataPointFrame<NUM_GEN> {
+    type Item = TaggedDataPoint<NUM_GEN>;
+    type IntoIter = std::vec::IntoIter<TaggedDataPoint<NUM_GEN>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
+#[derive(Clone)]
 pub enum MultiParam {
     Range(std::ops::RangeInclusive<f64>, usize),
     Constant(f64),
@@ -100,14 +110,52 @@ impl std::iter::IntoIterator for MultiParam {
     }
 }
 
-// pub fn multisim<const NUM_GEN: usize>(
-//     pop_0: MultiParam,
-//     prob_detection: MultiParam,
-//     deg_day_range: std::ops::RangeInclusive<u32>,
-//     emergences: [ProbDist; NUM_GEN],
-//     mating_delay: MultiParam,
-//     egg_multiplier: impl Fn(f64) -> f64,
-//     steps: u32,
-// ) -> TaggedDataPointFrame<NUM_GEN> {
-//     }
-// }
+pub fn multisim<const NUM_GEN: usize>(
+    pop_0: MultiParam,
+    prob_detection: MultiParam,
+    deg_day_range: std::ops::RangeInclusive<u32>,
+    emergences: [ProbDist; NUM_GEN],
+    mating_delay: MultiParam,
+    egg_multiplier: impl Fn(f64) -> f64,
+) -> TaggedDataPointFrame<NUM_GEN> {
+    let multiframe: Vec<Vec<Vec<TaggedDataPointFrame<NUM_GEN>>>> = pop_0
+        .clone()
+        .into_iter()
+        .map(|pop| {
+            prob_detection
+                .clone()
+                .into_iter()
+                .map(|detection| {
+                    mating_delay
+                        .clone()
+                        .into_iter()
+                        .map(|delay| {
+                            TaggedDataPoint::new_vec(
+                                simulate(
+                                    pop as u32,
+                                    detection,
+                                    deg_day_range.clone(),
+                                    emergences.clone(),
+                                    delay,
+                                    egg_multiplier(delay),
+                                ),
+                                pop as u32,
+                                detection,
+                                delay,
+                            )
+                        })
+                        .collect()
+                })
+                .collect()
+        })
+        .collect();
+
+    let flattened_multiframe = multiframe
+        .into_iter()
+        .flatten()
+        .flatten()
+        .flatten()
+        .collect();
+
+    TaggedDataPointFrame(flattened_multiframe)
+}
