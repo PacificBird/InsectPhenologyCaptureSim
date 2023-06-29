@@ -122,14 +122,17 @@ pub fn multisim<const NUM_GEN: usize>(
         .clone()
         .into_iter()
         .map(|pop| {
+            println!("Starting outer iteration");
             prob_detection
                 .clone()
                 .into_iter()
                 .map(|detection| {
+                    println!("starting inner iteration");
                     mating_delay
                         .clone()
                         .into_iter()
                         .map(|delay| {
+                            println!("Generating set with parameters pop: {pop}, detection: {detection}, and delay: {delay}");
                             TaggedDataPoint::new_vec(
                                 simulate(
                                     pop as u32,
