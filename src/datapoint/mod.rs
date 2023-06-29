@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use std::{
     fmt,
     fmt::{Debug, Display, Formatter},
@@ -42,25 +43,31 @@ impl<const NUM_GEN: usize> DataPoint<NUM_GEN> {
         let pop_headers = self
             .pop_active
             .clone()
-            .into_iter()
+            .into_par_iter()
             .enumerate()
-            .fold("".to_owned(), |acc, (i, _)| {
-                format!("{acc}pop_active_{},", i)
-            });
+            .fold(
+                || "".to_owned(),
+                |acc, (i, _)| format!("{acc}pop_active_{},", i),
+            )
+            .collect::<String>();
         let egg_headers = self
             .eggs
             .clone()
-            .into_iter()
+            .into_par_iter()
             .enumerate()
-            .fold("".to_owned(), |acc, (i, _)| format!("{acc}eggs_{},", i));
+            .fold(|| "".to_owned(), |acc, (i, _)| format!("{acc}eggs_{},", i))
+            .collect::<String>();
+
         let egg_total_headers = self
             .eggs_total
             .clone()
-            .into_iter()
+            .into_par_iter()
             .enumerate()
-            .fold("".to_owned(), |acc, (i, _)| {
-                format!("{acc}eggs_total_{},", i)
-            });
+            .fold(
+                || "".to_owned(),
+                |acc, (i, _)| format!("{acc}eggs_total_{},", i),
+            )
+            .collect::<String>();
 
         format!("dd,captured,{pop_headers}{egg_headers}{egg_total_headers}")
     }
@@ -73,11 +80,12 @@ impl<const NUM_GEN: usize> DataPointFrame<NUM_GEN> {
         let headers = self.0.get(1).unwrap().csv_headers();
         let data = self
             .0
-            .iter()
+            .par_iter()
             .enumerate()
             .map(|(idx, x)| format!("{},{}\n", idx, x.to_string()))
-            .reduce(|acc, row| format!("{}{}", acc, row))
-            .unwrap();
+            .reduce(|| "".to_string(), |acc, row| format!("{}{}", acc, row))
+            // .unwrap()
+        ;
         format!("{}\n{}", headers, data)
     }
 }
