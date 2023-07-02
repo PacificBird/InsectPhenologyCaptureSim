@@ -71,6 +71,34 @@ impl<const NUM_GEN: usize> DataPoint<NUM_GEN> {
 
         format!("dd,captured,{pop_headers}{egg_headers}{egg_total_headers}")
     }
+
+    pub fn to_string_sized(&self) -> (String, u32) {
+        let pop_active_string: String = self
+            .pop_active
+            .clone()
+            .into_iter()
+            .fold("".to_owned(), |acc, x| format!("{}{:.4},", acc, x));
+
+        let eggs_string: String = self
+            .eggs
+            .clone()
+            .into_iter()
+            .fold("".to_owned(), |acc, x| format!("{}{:.4},", acc, x));
+
+        let eggs_total_string: String = self
+            .eggs_total
+            .clone()
+            .into_iter()
+            .fold("".to_owned(), |acc, x| format!("{}{:.4},", acc, x));
+
+        (
+            format!(
+                "{},{}{}{}",
+                self.pop_captured, pop_active_string, eggs_string, eggs_total_string
+            ),
+            0,
+        )
+    }
 }
 
 pub struct DataPointFrame<const NUM_GEN: usize>(pub Vec<DataPoint<NUM_GEN>>);
