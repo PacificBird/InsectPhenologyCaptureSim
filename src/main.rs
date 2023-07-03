@@ -34,19 +34,16 @@ fn main() {
     let test_1 = multisim(
         MultiParam::Range(100.0..=100_100.0, 10),
         // MultiParam::Constant(100_000.0),
-        MultiParam::Range(0.001..=0.101, 1),
+        MultiParam::Range(0.001..=0.101, 10),
         // MultiParam::Constant(0.05),
         0..=2200,
         JW_EMERGENCES,
-        // MultiParam::Range(0.0..=80.0, 4),
-        MultiParam::Constant(0.0),
+        MultiParam::Range(0.0..=80.0, 4),
         egg_coefficient,
     );
-    println!("after simulation, size is {}", test_1.0.len());
+    println!("before csv string");
     let test_1_csv = test_1.to_csv_string();
-    println!("before file creation");
+    println!("after csv string");
     let mut file_1 = std::fs::File::create("test_1.csv").unwrap();
-    println!("after file creation");
     writeln!(&mut file_1, "{}", test_1_csv).expect("Couldn't write test_0.csv");
-    println!("after file write");
 }

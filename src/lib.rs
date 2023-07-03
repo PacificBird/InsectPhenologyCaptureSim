@@ -67,10 +67,14 @@ pub fn simulate<const NUM_GEN: usize>(
                         eggs_total[generation + 1] += egg_multiplier * mating_now;
                     }
 
-                    pop_captured += pop_active[generation] * prob_detection;
-                    pop_active[generation] = pop_active[generation]
-                        * (1.0 - prob_detection)
-                        * (f64::exp(0.058 * (1.0 - f64::exp(0.0448 * avg_age[generation]))));
+                    let captured_now = match pop_active[generation] * prob_detection {
+                        x if x > 1.0 => x,
+                        _ => 0.0,
+                    };
+                    pop_captured += captured_now;
+                    pop_active[generation] = (pop_active[generation]
+                        * jw_mortality(pop_active[generation]))
+                        - captured_now;
                     pop_active_last[generation] = pop_active[generation];
                 }
 
@@ -135,4 +139,8 @@ pub fn adjusted_logistic(steepness: f64, translation: f64, x: f64) -> f64 {
 
 pub fn egg_coefficient(delay: f64) -> f64 {
     (0.005147 * delay * delay) - (0.3227 * delay) + 36.02
+}
+
+fn jw_mortality(x: f64) -> f64 {
+    f64::exp(0.058 * (1.0 - f64::exp(0.0448 * x)))
 }

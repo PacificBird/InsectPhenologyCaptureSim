@@ -7,15 +7,23 @@ pub struct TaggedDataPoint<const NUM_GEN: usize> {
     pop_0: u32,
     prob_capture: f64,
     mating_delay: f64,
+    dd_span: u32,
 }
 
 impl<const NUM_GEN: usize> TaggedDataPoint<NUM_GEN> {
-    pub fn new(data: DataPoint<NUM_GEN>, pop_0: u32, prob_capture: f64, mating_delay: f64) -> Self {
+    pub fn new(
+        data: DataPoint<NUM_GEN>,
+        pop_0: u32,
+        prob_capture: f64,
+        mating_delay: f64,
+        dd_span: u32,
+    ) -> Self {
         Self {
             data,
             pop_0,
             prob_capture,
             mating_delay,
+            dd_span,
         }
     }
 
@@ -24,6 +32,7 @@ impl<const NUM_GEN: usize> TaggedDataPoint<NUM_GEN> {
         pop_0: u32,
         prob_capture: f64,
         mating_delay: f64,
+        dd_span: u32,
     ) -> TaggedDataPointFrame<NUM_GEN> {
         TaggedDataPointFrame(
             data.0
@@ -33,6 +42,7 @@ impl<const NUM_GEN: usize> TaggedDataPoint<NUM_GEN> {
                     pop_0,
                     prob_capture,
                     mating_delay,
+                    dd_span,
                 })
                 .collect(),
         )
@@ -40,7 +50,7 @@ impl<const NUM_GEN: usize> TaggedDataPoint<NUM_GEN> {
 
     pub fn csv_headers(&self) -> String {
         format!(
-            "{},pop_0,prob_capture,mating_delay",
+            "{},pop_0,prob_capture,mating_delay,dd_span",
             self.data.csv_headers()
         )
     }
@@ -50,11 +60,12 @@ impl<const NUM_GEN: usize> Display for TaggedDataPoint<NUM_GEN> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{},{},{},{}",
+            "{},{},{},{},{}",
             self.data.to_string(),
             self.pop_0,
             self.prob_capture,
             self.mating_delay,
+            self.dd_span,
         )
     }
 }
@@ -73,9 +84,9 @@ impl<const NUM_GEN: usize> TaggedDataPointFrame<NUM_GEN> {
             .0
             .iter()
             .enumerate()
-            .map(|(idx, x)| format!("{},{}\n", idx, x.to_string()))
-            .reduce(|acc, row| format!("{}{}", acc, row))
-            .unwrap();
+            .map(|(idx, x)| format!("{},{}\n", idx % x.dd_span as usize, x.to_string()))
+            .collect::<Vec<String>>()
+            .join("");
         format!("{}\n{}", headers, data)
     }
 }
@@ -145,6 +156,7 @@ pub fn multisim<const NUM_GEN: usize>(
                                 pop as u32,
                                 detection,
                                 delay,
+                                deg_day_range.end() - deg_day_range.start() + 1
                             )
                         })
                         .collect()

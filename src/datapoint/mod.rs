@@ -43,31 +43,27 @@ impl<const NUM_GEN: usize> DataPoint<NUM_GEN> {
         let pop_headers = self
             .pop_active
             .clone()
-            .into_par_iter()
+            .into_iter()
             .enumerate()
-            .fold(
-                || "".to_owned(),
-                |acc, (i, _)| format!("{acc}pop_active_{},", i),
-            )
-            .collect::<String>();
+            .fold("".to_owned(), |acc, (i, _)| {
+                format!("{acc}pop_active_{},", i)
+            });
+
         let egg_headers = self
             .eggs
             .clone()
-            .into_par_iter()
+            .into_iter()
             .enumerate()
-            .fold(|| "".to_owned(), |acc, (i, _)| format!("{acc}eggs_{},", i))
-            .collect::<String>();
+            .fold("".to_owned(), |acc, (i, _)| format!("{acc}eggs_{},", i));
 
         let egg_total_headers = self
             .eggs_total
             .clone()
-            .into_par_iter()
+            .into_iter()
             .enumerate()
-            .fold(
-                || "".to_owned(),
-                |acc, (i, _)| format!("{acc}eggs_total_{},", i),
-            )
-            .collect::<String>();
+            .fold("".to_owned(), |acc, (i, _)| {
+                format!("{acc}eggs_total_{},", i)
+            });
 
         format!("dd,captured,{pop_headers}{egg_headers}{egg_total_headers}")
     }
@@ -108,12 +104,11 @@ impl<const NUM_GEN: usize> DataPointFrame<NUM_GEN> {
         let headers = self.0.get(1).unwrap().csv_headers();
         let data = self
             .0
-            .par_iter()
+            .iter()
             .enumerate()
             .map(|(idx, x)| format!("{},{}\n", idx, x.to_string()))
-            .reduce(|| "".to_string(), |acc, row| format!("{}{}", acc, row))
-            // .unwrap()
-        ;
+            .collect::<Vec<String>>()
+            .join("");
         format!("{}\n{}", headers, data)
     }
 }
