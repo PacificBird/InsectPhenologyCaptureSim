@@ -32,9 +32,9 @@ fn main() {
     writeln!(&mut file_0, "{}", test_0_csv).expect("Couldn't write test_0.csv");
 
     let test_1 = multisim(
-        MultiParam::Range(100.0..=100_100.0, 10),
+        MultiParam::Range(1_000.0..=1_001_000.0, 20),
         // MultiParam::Constant(100_000.0),
-        MultiParam::Range(0.001..=0.101, 10),
+        MultiParam::Range(0.001..=0.101, 20),
         // MultiParam::Constant(0.05),
         0..=2200,
         JW_EMERGENCES,
