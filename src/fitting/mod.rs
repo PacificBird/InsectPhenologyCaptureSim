@@ -1,4 +1,4 @@
-use super::{simulate, DataPoint, JW_EMERGENCES};
+use super::{simulate, DataPointFrame, JW_EMERGENCES};
 
 #[derive(Debug)]
 pub struct FittingData {
@@ -73,7 +73,7 @@ pub fn fit_pop_growth<const N: usize>(fitparams: [FittingData; N]) -> [f64; N] {
                     100_000,
                     0.05,
                     0..=2200,
-                    JW_EMERGENCES.to_vec(),
+                    JW_EMERGENCES,
                     fitparams[n].delay,
                     coefficient,
                 );
@@ -95,8 +95,9 @@ pub fn calc_inherent_growth(n0: f64, nn: f64, t: f64) -> f64 {
     f64::ln(nn / n0) / t
 }
 
-pub fn get_last_egg_total(data: &Vec<DataPoint>, gen: usize) -> f64 {
-    data.get(2200)
+pub fn get_last_egg_total<const NUM_GEN: usize>(data: &DataPointFrame<NUM_GEN>, gen: usize) -> f64 {
+    data.0
+        .get(2200)
         .expect("Couldn't get 2200th datapoint")
         .eggs_total
         .get(gen + 1)
