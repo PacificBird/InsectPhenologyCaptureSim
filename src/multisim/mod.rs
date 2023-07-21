@@ -2,6 +2,7 @@ use super::{simulate, JW_EMERGENCES};
 use crate::{DataPoint, DataPointFrame, ProbDist};
 use std::fmt::{Display, Formatter};
 
+/// A [DataPoint] tagged for information about the simulation parameters that generated it
 pub struct TaggedDataPoint<const NUM_GEN: usize> {
     data: DataPoint<NUM_GEN>,
     pop_0: u32,
@@ -27,6 +28,7 @@ impl<const NUM_GEN: usize> TaggedDataPoint<NUM_GEN> {
         }
     }
 
+    /// Creates a [TaggedDataPointFrame] from a [DataPointFrame]
     pub fn new_vec(
         data: DataPointFrame<NUM_GEN>,
         pop_0: u32,
@@ -70,10 +72,10 @@ impl<const NUM_GEN: usize> Display for TaggedDataPoint<NUM_GEN> {
     }
 }
 
+/// Newtype for a Vec of TaggedDataPoints
 pub struct TaggedDataPointFrame<const NUM_GEN: usize>(pub Vec<TaggedDataPoint<NUM_GEN>>);
 
 impl<const NUM_GEN: usize> TaggedDataPointFrame<NUM_GEN> {
-    // pub fn from_untagged_frame()
     pub fn to_csv_string(&self) -> String {
         let headers = self
             .0
@@ -109,6 +111,7 @@ pub enum MultiParam {
 impl std::iter::IntoIterator for MultiParam {
     type Item = f64;
     type IntoIter = std::iter::Successors<f64, impl FnMut(&f64) -> Option<f64>>;
+    // This is to allow the creation of a range of floating point numbers
     fn into_iter(self) -> Self::IntoIter {
         let (start, end, step) = match self {
             MultiParam::Range(range, step) => (*range.start(), *range.end(), step as f64),
@@ -121,6 +124,7 @@ impl std::iter::IntoIterator for MultiParam {
     }
 }
 
+/// Generates a 3 dimensional matrix of simulation results that vary across three degrees of freedom.
 pub fn multisim<const NUM_GEN: usize>(
     pop_0: MultiParam,
     prob_detection: MultiParam,
@@ -133,17 +137,17 @@ pub fn multisim<const NUM_GEN: usize>(
         .clone()
         .into_iter()
         .map(|pop| {
-            println!("Starting outer iteration");
+            // println!("Starting outer iteration");
             prob_detection
                 .clone()
                 .into_iter()
                 .map(|detection| {
-                    println!("starting inner iteration");
+                    // println!("starting inner iteration");
                     mating_delay
                         .clone()
                         .into_iter()
                         .map(|delay| {
-                            println!("Generating set with parameters pop: {pop}, detection: {detection}, and delay: {delay}");
+                            // println!("Generating set with parameters pop: {pop}, detection: {detection}, and delay: {delay}");
                             TaggedDataPoint::new_vec(
                                 simulate(
                                     pop as u32,
@@ -156,7 +160,7 @@ pub fn multisim<const NUM_GEN: usize>(
                                 pop as u32,
                                 detection,
                                 delay,
-                                deg_day_range.end() - deg_day_range.start() + 1
+                                deg_day_range.end() - deg_day_range.start() + 1,
                             )
                         })
                         .collect()

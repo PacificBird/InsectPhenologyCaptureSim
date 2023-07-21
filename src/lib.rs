@@ -7,11 +7,13 @@ pub mod multisim;
 
 pub use datapoint::*;
 
+/// Simple numerical differentiation by definition for use when a cumulative density function is used as an emergence curve.
 pub fn diff(x: f64, cdf: impl Fn(f64) -> f64) -> f64 {
     let h = 0.001;
     (cdf(x + h) - cdf(x)) / h
 }
 
+/// Allows for use of both cumulative and non-cumulative density functions for emergence calculations.
 #[allow(dead_code)]
 #[derive(Clone)]
 pub enum ProbDist<'a> {
@@ -19,6 +21,8 @@ pub enum ProbDist<'a> {
     PDF(&'a dyn Fn(f64) -> f64),
 }
 
+/// The bread and butter, simulates the emergence, mating, capture, and death of codling moth with variable amount of generations depending on number of emergence curves supplied.
+/// This function is highly compile-time dependent due to the const generic. Currently, no purely runtime version exists for this function.
 pub fn simulate<const NUM_GEN: usize>(
     pop_0: u32,
     prob_detection: f64,
@@ -86,11 +90,7 @@ pub fn simulate<const NUM_GEN: usize>(
     )
 }
 
-#[allow(dead_code)]
-pub fn example_cdf(x: f64) -> f64 {
-    1.0 / (1.0 + f64::exp(-0.05 * (x - 200.0)))
-}
-
+/// Emergence function for overwintering generation as described in Jones & Wiman's 2012 study "Modeling the interaction of physiological time, seasonal weatherpatterns, and delayed mating on population dynamics of codling moth"
 pub fn jones_wiman_2012_0(x: f64) -> f64 {
     let gamma_0 = 1.0737;
     let delta_0 = 1.2349;
@@ -101,6 +101,7 @@ pub fn jones_wiman_2012_0(x: f64) -> f64 {
         * f64::exp(-0.5 * (gamma_0 + (delta_0 * (z_0 / (1.0 - z_0)).ln())).powi(2)))
     .max(0.0)
 }
+/// Emergence function for first generation as described in Jones & Wiman's 2012 study "Modeling the interaction of physiological time, seasonal weatherpatterns, and delayed mating on population dynamics of codling moth"
 pub fn jones_wiman_2012_1(x: f64) -> f64 {
     let gamma_1 = 0.3964;
     let delta_1 = 1.4682;
@@ -112,6 +113,7 @@ pub fn jones_wiman_2012_1(x: f64) -> f64 {
         * f64::exp(-0.5 * (gamma_1 + (delta_1 * (z_1 / (1.0 - z_1)).ln())).powi(2)))
     .max(0.0)
 }
+/// Emergence function for second generation as described in Jones & Wiman's 2012 study "Modeling the interaction of physiological time, seasonal weatherpatterns, and delayed mating on population dynamics of codling moth"
 pub fn jones_wiman_2012_2(x: f64) -> f64 {
     let gamma_2 = 0.0876;
     let delta_2 = 1.0923;
@@ -124,20 +126,24 @@ pub fn jones_wiman_2012_2(x: f64) -> f64 {
     .max(0.0)
 }
 
+/// Const collection of the Jones & Wiman 2012 emergences curves
 pub const JW_EMERGENCES: [ProbDist; 3] = [
     ProbDist::PDF(&jones_wiman_2012_0),
     ProbDist::PDF(&jones_wiman_2012_1),
     ProbDist::PDF(&jones_wiman_2012_2),
 ];
 
+/// This function provides a logistic function that picks a the y=0.9 point as the fixed point, regardless of steepness.
 pub fn adjusted_logistic(steepness: f64, translation: f64, x: f64) -> f64 {
     1.0 / (1.0 + f64::exp(-1.0 * steepness * (x as f64 - translation + (2.2 / steepness))))
 }
 
+/// "Eggs per mating event" function by mating delay, calculated by the [fitting] function
 pub fn egg_coefficient(delay: f64) -> f64 {
     (0.005147 * delay * delay) - (0.3227 * delay) + 36.02
 }
 
+/// Mortality by degree day curve as described in Jones & Wiman 2012
 fn jw_mortality(x: f64) -> f64 {
     f64::exp(0.058 * (1.0 - f64::exp(0.0448 * x)))
 }

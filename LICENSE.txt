@@ -1,8 +1,0 @@
-All code in the following repository was created by a public employee during the regular course of their duties,
-and therefore is dedicated to the public domain.
-
-However, the code may reference and require libraries created by others licensed under the GNU GPLv3; consequently,
-any and all individual statements and expressions contained within the code under this repository that call
-code from libraries licensed under the GNU GPLv3 are also licensed under the GNU GPLv3 under the continued conditon
-that they require it. Statements and expressions previously calling GNU GPLv3 code which are modified to no longer
-require it shall be considered public domain.

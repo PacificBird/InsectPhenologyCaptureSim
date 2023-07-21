@@ -1,5 +1,6 @@
 use super::{simulate, DataPointFrame, JW_EMERGENCES};
 
+/// Struct for the data required to fit a required egg coefficient to expected population growth
 #[derive(Debug)]
 pub struct FittingData {
     delay: f64,
@@ -8,6 +9,7 @@ pub struct FittingData {
     seed_coefficient: f64,
 }
 impl FittingData {
+    /// Create new FittingData from a degree day reference
     pub fn new(delay: f64, target_rm: f64, gen_time: f64, seed_coefficient: f64) -> Self {
         Self {
             delay,
@@ -17,6 +19,7 @@ impl FittingData {
         }
     }
 
+    /// Create new FittingData from a calendar day reference
     pub fn new_from_calendar_day(
         delay: f64,
         gen_time: f64,
@@ -31,6 +34,7 @@ impl FittingData {
         }
     }
 
+    /// Create an array of [FittingData]s from arrays of it's consitutent fields
     pub fn new_many<const N: usize>(
         delay: [f64; N],
         target_rm: [f64; N],
@@ -45,6 +49,7 @@ impl FittingData {
             .expect("Fixed size map should have exactly N elements")
     }
 
+    /// Same as [Self::new_many] but with a calendar day reference
     pub fn new_many_from_calendar_day<const N: usize>(
         delay: [f64; N],
         gen_time: [f64; N],
@@ -62,6 +67,7 @@ impl FittingData {
     }
 }
 
+/// Finds the egg_coefficients that would be required to match the population growth data supplied to it
 pub fn fit_pop_growth<const N: usize>(fitparams: [FittingData; N]) -> [f64; N] {
     (0..N)
         .into_iter()
