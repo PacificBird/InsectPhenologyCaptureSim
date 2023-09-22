@@ -31,6 +31,7 @@ pub fn simulate<const NUM_GEN: usize>(
     mating_delay: f64,
     egg_multiplier: f64,
 ) -> DataPointFrame<NUM_GEN> {
+    let mut pop_emerged = [0.0; NUM_GEN];
     let mut pop_active = [0.0; NUM_GEN];
     let mut pop_captured = 0.0;
     let mut avg_age = [0.0; NUM_GEN];
@@ -55,6 +56,7 @@ pub fn simulate<const NUM_GEN: usize>(
                     .max(0.0);
                     eggs[generation] -= activated;
                     pop_active[generation] += activated;
+                    pop_emerged[generation] += activated;
                     avg_age[generation] += 1.0
                         * if pop_active[generation] != 0.0 {
                             pop_active_last[generation] / pop_active[generation]
@@ -71,17 +73,18 @@ pub fn simulate<const NUM_GEN: usize>(
                         eggs_total[generation + 1] += egg_multiplier * mating_now;
                     }
 
+                    pop_active[generation] =
+                        pop_active[generation] * jw_mortality(pop_active[generation]);
+                    pop_active_last[generation] = pop_active[generation];
                     let captured_now = pop_active[generation] * prob_detection;
                     pop_captured += captured_now;
-                    pop_active[generation] = (pop_active[generation]
-                        * jw_mortality(pop_active[generation]))
-                        - captured_now;
-                    pop_active_last[generation] = pop_active[generation];
+                    pop_active[generation] -= captured_now;
                 }
 
                 DataPoint {
                     pop_captured,
                     pop_active: pop_active.clone(),
+                    pop_emerged: pop_emerged.clone(),
                     eggs: eggs.clone(),
                     eggs_total: eggs_total.clone(),
                 }

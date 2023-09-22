@@ -8,6 +8,7 @@ use std::{
 pub struct DataPoint<const NUM_GEN: usize> {
     pub pop_captured: f64,
     pub pop_active: [f64; NUM_GEN],
+    pub pop_emerged: [f64; NUM_GEN],
     pub eggs: [f64; NUM_GEN],
     pub eggs_total: [f64; NUM_GEN],
 }
@@ -17,6 +18,12 @@ impl<const NUM_GEN: usize> Display for DataPoint<NUM_GEN> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let pop_active_string: String = self
             .pop_active
+            .clone()
+            .into_iter()
+            .fold("".to_owned(), |acc, x| format!("{}{},", acc, x));
+
+        let pop_emerged_string: String = self
+            .pop_emerged
             .clone()
             .into_iter()
             .fold("".to_owned(), |acc, x| format!("{}{},", acc, x));
@@ -35,8 +42,12 @@ impl<const NUM_GEN: usize> Display for DataPoint<NUM_GEN> {
 
         write!(
             f,
-            "{},{}{}{}",
-            self.pop_captured, pop_active_string, eggs_string, eggs_total_string
+            "{},{}{}{}{}",
+            self.pop_captured,
+            pop_active_string,
+            pop_emerged_string,
+            eggs_string,
+            eggs_total_string
         )
     }
 }
@@ -50,6 +61,15 @@ impl<const NUM_GEN: usize> DataPoint<NUM_GEN> {
             .enumerate()
             .fold("".to_owned(), |acc, (i, _)| {
                 format!("{acc}pop_active_{},", i)
+            });
+
+        let emerged_headers = self
+            .pop_emerged
+            .clone()
+            .into_iter()
+            .enumerate()
+            .fold("".to_owned(), |acc, (i, _)| {
+                format!("{acc}pop_emerged_{},", i)
             });
 
         let egg_headers = self
@@ -68,7 +88,7 @@ impl<const NUM_GEN: usize> DataPoint<NUM_GEN> {
                 format!("{acc}eggs_total_{},", i)
             });
 
-        format!("dd,captured,{pop_headers}{egg_headers}{egg_total_headers}")
+        format!("dd,captured,{pop_headers}{emerged_headers}{egg_headers}{egg_total_headers}")
     }
 }
 
