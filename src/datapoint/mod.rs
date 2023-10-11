@@ -87,7 +87,7 @@ impl<const NUM_GEN: usize> DataPoint<NUM_GEN> {
             .fold("".to_owned(), |acc, (i, _)| {
                 format!("{acc}eggs_total_{},", i)
             });
-
+        println!("inside datapoint::csv_headers()");
         format!("dd,captured,{pop_headers}{emerged_headers}{egg_headers}{egg_total_headers}")
     }
 }
@@ -106,6 +106,7 @@ impl<const NUM_GEN: usize> DataPointFrame<NUM_GEN> {
             .map(|(idx, x)| format!("{},{}\n", idx, x.to_string()))
             .collect::<Vec<String>>()
             .join("");
+        println!("within datapoint::to_csv_string() !");
         format!("{}\n{}", headers, data)
     }
 }
