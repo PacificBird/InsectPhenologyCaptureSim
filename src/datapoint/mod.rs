@@ -6,7 +6,7 @@ use std::{
 /// The Basic DataPoint struct containing the state of the simulation on a particular degree day
 #[derive(Debug)]
 pub struct DataPoint<const NUM_GEN: usize> {
-    pub pop_captured: f64,
+    pub pop_captured: [f64; NUM_GEN],
     pub pop_active: [f64; NUM_GEN],
     pub pop_emerged: [f64; NUM_GEN],
     pub eggs: [f64; NUM_GEN],
@@ -16,34 +16,40 @@ pub struct DataPoint<const NUM_GEN: usize> {
 // Allow for DataPoint's to be turned into a row of comma seperated values
 impl<const NUM_GEN: usize> Display for DataPoint<NUM_GEN> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let pop_captured_string: String = self
+            .pop_captured
+            .clone()
+            .into_iter()
+            .fold("".to_owned(), |acc, x| format!("{},{}", acc, x));
+
         let pop_active_string: String = self
             .pop_active
             .clone()
             .into_iter()
-            .fold("".to_owned(), |acc, x| format!("{}{},", acc, x));
+            .fold("".to_owned(), |acc, x| format!("{},{}", acc, x));
 
         let pop_emerged_string: String = self
             .pop_emerged
             .clone()
             .into_iter()
-            .fold("".to_owned(), |acc, x| format!("{}{},", acc, x));
+            .fold("".to_owned(), |acc, x| format!("{},{}", acc, x));
 
         let eggs_string: String = self
             .eggs
             .clone()
             .into_iter()
-            .fold("".to_owned(), |acc, x| format!("{}{},", acc, x));
+            .fold("".to_owned(), |acc, x| format!("{},{}", acc, x));
 
         let eggs_total_string: String = self
             .eggs_total
             .clone()
             .into_iter()
-            .fold("".to_owned(), |acc, x| format!("{}{},", acc, x));
+            .fold("".to_owned(), |acc, x| format!("{},{}", acc, x));
 
         write!(
             f,
-            "{},{}{}{}{}",
-            self.pop_captured,
+            "{}{}{}{}{}",
+            pop_captured_string,
             pop_active_string,
             pop_emerged_string,
             eggs_string,
@@ -54,13 +60,22 @@ impl<const NUM_GEN: usize> Display for DataPoint<NUM_GEN> {
 impl<const NUM_GEN: usize> DataPoint<NUM_GEN> {
     /// Does as the name suggests. It is necessary to get headers for a concrete instance of DataPoint because the size of the arrays it contains changes based on the number of generations simulated.
     pub fn csv_headers(&self) -> String {
+        let captured_headers = self
+            .pop_captured
+            .clone()
+            .into_iter()
+            .enumerate()
+            .fold("".to_owned(), |acc, (i, _)| {
+                format!("{acc},pop_captured_{}", i)
+            });
+
         let pop_headers = self
             .pop_active
             .clone()
             .into_iter()
             .enumerate()
             .fold("".to_owned(), |acc, (i, _)| {
-                format!("{acc}pop_active_{},", i)
+                format!("{acc},pop_active_{}", i)
             });
 
         let emerged_headers = self
@@ -69,7 +84,7 @@ impl<const NUM_GEN: usize> DataPoint<NUM_GEN> {
             .into_iter()
             .enumerate()
             .fold("".to_owned(), |acc, (i, _)| {
-                format!("{acc}pop_emerged_{},", i)
+                format!("{acc},pop_emerged_{}", i)
             });
 
         let egg_headers = self
@@ -77,7 +92,7 @@ impl<const NUM_GEN: usize> DataPoint<NUM_GEN> {
             .clone()
             .into_iter()
             .enumerate()
-            .fold("".to_owned(), |acc, (i, _)| format!("{acc}eggs_{},", i));
+            .fold("".to_owned(), |acc, (i, _)| format!("{acc},eggs_{}", i));
 
         let egg_total_headers = self
             .eggs_total
@@ -85,10 +100,12 @@ impl<const NUM_GEN: usize> DataPoint<NUM_GEN> {
             .into_iter()
             .enumerate()
             .fold("".to_owned(), |acc, (i, _)| {
-                format!("{acc}eggs_total_{},", i)
+                format!("{acc},eggs_total_{}", i)
             });
         println!("inside datapoint::csv_headers()");
-        format!("dd,captured,{pop_headers}{emerged_headers}{egg_headers}{egg_total_headers}")
+        format!(
+            "dd{captured_headers}{pop_headers}{emerged_headers}{egg_headers}{egg_total_headers}"
+        )
     }
 }
 
@@ -103,7 +120,7 @@ impl<const NUM_GEN: usize> DataPointFrame<NUM_GEN> {
             .0
             .iter()
             .enumerate()
-            .map(|(idx, x)| format!("{},{}\n", idx, x.to_string()))
+            .map(|(idx, x)| format!("{}{}\n", idx, x.to_string()))
             .collect::<Vec<String>>()
             .join("");
         println!("within datapoint::to_csv_string() !");

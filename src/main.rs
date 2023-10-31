@@ -33,16 +33,16 @@ fn main() {
     let mut file_1 = std::fs::File::create("test_1.csv").unwrap();
     writeln!(&mut file_1, "{}", test_1_csv).expect("Couldn't write test_0.csv");
 
-    // let test_2 = multisim(
-    //     MultiParam::Constant(1_000.0),
-    //     MultiParam::Range(0.01..=0.2, 1000),
-    //     0..=2200,
-    //     JW_EMERGENCES,
-    //     MultiParam::Constant(0.0),
-    //     egg_coefficient,
-    // );
-    // let test_2_csv = test_2.to_csv_string();
-    // println!("after csv string");
-    // let mut file_2 = std::fs::File::create("test_2.csv").unwrap();
-    // writeln!(&mut file_2, "{}", test_2_csv).expect("Couldn't write test_2.csv");
+    let test_2 = multisim(
+        MultiParam::Constant(1_000.0),
+        MultiParam::Range(0.01..=0.2, 1000),
+        0..=2200,
+        JW_EMERGENCES,
+        MultiParam::Constant(0.0),
+        egg_coefficient,
+    );
+    let test_2_csv = test_2.to_csv_string();
+    println!("after csv string");
+    let mut file_2 = std::fs::File::create("test_2.csv").unwrap();
+    writeln!(&mut file_2, "{}", test_2_csv).expect("Couldn't write test_2.csv");
 }

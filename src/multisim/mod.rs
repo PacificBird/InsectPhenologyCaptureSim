@@ -86,7 +86,7 @@ impl<const NUM_GEN: usize> TaggedDataPointFrame<NUM_GEN> {
             .0
             .iter()
             .enumerate()
-            .map(|(idx, x)| format!("{},{}\n", idx % x.dd_span as usize, x.to_string()))
+            .map(|(idx, x)| format!("{}{}\n", idx % x.dd_span as usize, x.to_string()))
             .collect::<Vec<String>>()
             .join("");
         format!("{}\n{}", headers, data)

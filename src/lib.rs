@@ -33,7 +33,7 @@ pub fn simulate<const NUM_GEN: usize>(
 ) -> DataPointFrame<NUM_GEN> {
     let mut pop_emerged = [0.0; NUM_GEN];
     let mut pop_active = [0.0; NUM_GEN];
-    let mut pop_captured = 0.0;
+    let mut pop_captured = [0.0; NUM_GEN];
     let mut avg_age = [0.0; NUM_GEN];
     let mut eggs = [0.0; NUM_GEN];
     eggs[0] = pop_0 as f64;
@@ -77,12 +77,12 @@ pub fn simulate<const NUM_GEN: usize>(
                         pop_active[generation] * jw_mortality(pop_active[generation]);
                     pop_active_last[generation] = pop_active[generation];
                     let captured_now = pop_active[generation] * prob_detection;
-                    pop_captured += captured_now;
+                    pop_captured[generation] += captured_now;
                     pop_active[generation] -= captured_now;
                 }
 
                 DataPoint {
-                    pop_captured,
+                    pop_captured: pop_captured.clone(),
                     pop_active: pop_active.clone(),
                     pop_emerged: pop_emerged.clone(),
                     eggs: eggs.clone(),
