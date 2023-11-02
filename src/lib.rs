@@ -73,8 +73,8 @@ pub fn simulate<const NUM_GEN: usize>(
                         eggs_total[generation + 1] += egg_multiplier * mating_now;
                     }
 
-                    pop_active[generation] =
-                        pop_active[generation] * jw_mortality(pop_active[generation]);
+                    // pop_active[generation] =
+                    //     pop_active[generation] * jw_mortality(pop_active[generation]);
                     pop_active_last[generation] = pop_active[generation];
                     let captured_now = pop_active[generation] * prob_detection;
                     pop_captured[generation] += captured_now;
