@@ -132,6 +132,7 @@ pub fn multisim<const NUM_GEN: usize>(
     emergences: [ProbDist; NUM_GEN],
     mating_delay: MultiParam,
     egg_multiplier: impl Fn(f64) -> f64,
+    mortality: bool,
 ) -> TaggedDataPointFrame<NUM_GEN> {
     let multiframe: Vec<Vec<Vec<TaggedDataPointFrame<NUM_GEN>>>> = pop_0
         .clone()
@@ -156,6 +157,7 @@ pub fn multisim<const NUM_GEN: usize>(
                                     emergences.clone(),
                                     delay,
                                     egg_multiplier(delay),
+                                    mortality,
                                 ),
                                 pop as u32,
                                 detection,
