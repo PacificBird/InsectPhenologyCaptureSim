@@ -132,6 +132,11 @@ pub fn jones_wiman_2012_2(x: f64) -> f64 {
     .max(0.0)
 }
 
+/// Mortality by degree day age curve as described in Jones & Wiman 2012
+fn jw_mortality(x: f64) -> f64 {
+    f64::exp(0.058 * (1.0 - f64::exp(0.0448 * x)))
+}
+
 /// Const collection of the Jones & Wiman 2012 emergences curves
 pub const JW_EMERGENCES: [ProbDist; 3] = [
     ProbDist::PDF(&jones_wiman_2012_0),
@@ -147,9 +152,4 @@ pub fn adjusted_logistic(steepness: f64, translation: f64, x: f64) -> f64 {
 /// "Eggs per mating event" function by mating delay, calculated by the [fitting] function
 pub fn egg_coefficient(delay: f64) -> f64 {
     (0.005147 * delay * delay) - (0.3227 * delay) + 36.02
-}
-
-/// Mortality by degree day curve as described in Jones & Wiman 2012
-fn jw_mortality(x: f64) -> f64 {
-    f64::exp(0.058 * (1.0 - f64::exp(0.0448 * x)))
 }
