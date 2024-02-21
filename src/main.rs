@@ -20,34 +20,34 @@ fn main() {
     // let mut file_0 = std::fs::File::create("test_0.csv").unwrap();
     // writeln!(&mut file_0, "{}", test_0_csv).expect("Couldn't write test_0.csv");
 
-    // let test_1 = multisim(
-    //     MultiParam::Range(1_000.0..=10_000.0, 20),
-    //     MultiParam::Range(0.005..=0.101, 20),
-    //     0..=2200,
-    //     JW_EMERGENCES,
-    //     MultiParam::Range(0.0..=80.0, 4),
-    //     egg_coefficient,
-    //     false,
-    // );
-    // println!("before csv string");
-    // let test_1_csv = test_1.to_csv_string();
-    // println!("after csv string");
-    // let mut file_1 = std::fs::File::create("test_1.csv").unwrap();
-    // writeln!(&mut file_1, "{}", test_1_csv).expect("Couldn't write test_0.csv");
+    let test_1 = multisim(
+        MultiParam::Range(1_000.0..=10_000.0, 20),
+        MultiParam::Range(0.005..=0.101, 20),
+        0..=2200,
+        JW_EMERGENCES,
+        MultiParam::Range(0.0..=80.0, 4),
+        egg_coefficient,
+        false,
+    );
+    println!("before csv string");
+    let test_1_csv = test_1.to_csv_string();
+    println!("after csv string");
+    let mut file_1 = std::fs::File::create("test_1.csv").unwrap();
+    writeln!(&mut file_1, "{}", test_1_csv).expect("Couldn't write test_0.csv");
 
-    // let test_2 = multisim(
-    //     MultiParam::Constant(1_000.0),
-    //     MultiParam::Range(0.0005..=0.1, 1000),
-    //     0..=2200,
-    //     JW_EMERGENCES,
-    //     MultiParam::Constant(0.0),
-    //     egg_coefficient,
-    //     false,
-    // );
-    // let test_2_csv = test_2.to_csv_string();
-    // println!("after csv string");
-    // let mut file_2 = std::fs::File::create("test_2.csv").unwrap();
-    // writeln!(&mut file_2, "{}", test_2_csv).expect("Couldn't write test_2.csv");
+    let test_2 = multisim(
+        MultiParam::Constant(1_000.0),
+        MultiParam::Range(0.0005..=0.1, 1000),
+        0..=2200,
+        JW_EMERGENCES,
+        MultiParam::Constant(0.0),
+        egg_coefficient,
+        false,
+    );
+    let test_2_csv = test_2.to_csv_string();
+    println!("after csv string");
+    let mut file_2 = std::fs::File::create("test_2.csv").unwrap();
+    writeln!(&mut file_2, "{}", test_2_csv).expect("Couldn't write test_2.csv");
 
     let test_3 = multisim(
         MultiParam::Constant(1_000.0),
