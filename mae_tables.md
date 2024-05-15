@@ -55,14 +55,14 @@ OKSIR REGION A
 
 FIELD      : (MAE, BIOFIX)
 --------------------------
-OKSIR      : (0.028,   143)
-AllrCoug   : (0.00706, 54)
-CRO        : (0.01798, 49)
-Hansen     : (0.01163, 149)
-HoskGibOth : (0.01259, 110)
-Royal      : (0.01339, 138)
-ValKoe     : (0.01526, 82)
-fiveEa     : (0.00928, 57)
+OKSIR      : (0.028,   143)  
+AllrCoug   : (0.00706, 54)  
+CRO        : (0.01798, 49)  
+Hansen     : (0.01163, 149)  
+HoskGibOth : (0.01259, 110)  
+Royal      : (0.01339, 138)  
+ValKoe     : (0.01526, 82)  
+fiveEa     : (0.00928, 57)  
 
 AllrCoug2019, Hansen2021, Hosk2021, fiveEa2021, 
 excluded for poor data quality (low sample size or late sampling)
