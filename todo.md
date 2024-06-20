@@ -1,4 +1,0 @@
-- Bring in the extra OKSIR data
-- Test model out on that
-- Then test it out on the constant dense trap data
-- Maybe see about correcting the early season underestimation?
