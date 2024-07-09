@@ -53,6 +53,22 @@ OKSIR REGION A
 
 ## Location Parameter Optimization
 
+|FIELD      | MAE    | ξ    |
+|:---------:|:-------:|:----:|
+|OKSIR      | 0.028   | 143  |
+|AllrCoug   | 0.03058 | 54   |
+|CRO        | 0.02944 | 49   |
+|Hansen     | 0.02698 | 149  |
+|HoskGibOth | 0.03487 | 110  |
+|Royal      | 0.02881 | 138  |
+|ValKoe     | 0.03665 | 82   |
+|fiveEa     | 0.02182 | 57   |
+
+AllrCoug2019, Hansen2021, Hosk2021, fiveEa2021, 
+excluded for poor data quality (low sample size or late sampling)
+and/or extremely non-JSB distributed data for the purposes
+of correct biofix optimization.  
+
 OKSIR REGION A (ξ = 143) 
 |MAE     | EFFICACY|
 |:------:|:-------:|
@@ -72,19 +88,33 @@ OKSIR REGION A (ξ = 143)
 |0.05034 | 0.00598 |
 |0.04573 | 0.03731 |
 
-|FIELD      | MAE    | ξ    |
-|:---------:|:-------:|:----:|
-|OKSIR      | 0.028   | 143  |
-|AllrCoug   | 0.03058 | 54   |
-|CRO        | 0.02944 | 49   |
-|Hansen     | 0.02698 | 149  |
-|HoskGibOth | 0.03487 | 110  |
-|Royal      | 0.02881 | 138  |
-|ValKoe     | 0.03665 | 82   |
-|fiveEa     | 0.02182 | 57   |
-
-AllrCoug2019, Hansen2021, Hosk2021, fiveEa2021, 
-excluded for poor data quality (low sample size or late sampling)
-and/or extremely non-JSB distributed data for the purposes
-of correct biofix optimization.  
-
+|FIELD/YEAR      | MEAN ABSOLUTE ERROR | NET EFFICACY | 
+|:--------------:|:-------------------:|:------------:|
+|AllrCoug/2018   | 0.03263             | 0.04794      | 
+|AllrCoug/2019   | 0.09279             | 0.09057      | 
+|AllrCoug/2020   | 0.02418             | 0.01157      | 
+|AllrCoug/2021   | 0.05873             | 0.00841      | 
+|CRO/2018        | 0.03001             | 0.00661      | 
+|CRO/2019        | 0.07531             | 0.02509      | 
+|CRO/2020        | 0.08423             | 0.06542      | 
+|CRO/2021        | 0.03243             | 0.00722      | 
+|Hansen/2018     | 0.06438             | 0.01297      | 
+|Hansen/2019     | 0.03982             | 0.01469      | 
+|Hansen/2020     | 0.02279             | 0.00722      | 
+|Hansen/2021     | 0.19198             | 0.01008      | 
+|HoskGibOth/2018 | 0.06422             | 0.00642      | 
+|HoskGibOth/2019 | 0.03428             | 0.00649      | 
+|HoskGibOth/2020 | 0.02800             | 0.06981      | 
+|HoskGibOth/2021 | 0.18456             | 0.00914      | 
+|Royal/2018      | 0.04085             | 0.01270      | 
+|Royal/2019      | 0.05525             | 0.01230      | 
+|Royal/2020      | 0.03982             | 0.02344      | 
+|Royal/2021      | 0.03126             | 0.01486      | 
+|ValKoe/2018     | 0.04427             | 0.00630      | 
+|ValKoe/2019     | 0.05245             | 0.03432      | 
+|ValKoe/2020     | 0.02771             | 0.00698      | 
+|ValKoe/2021     | 0.05720             | 0.06401      | 
+|fiveEa/2018     | 0.03624             | 0.00541      | 
+|fiveEa/2019     | 0.03007             | 0.00592      | 
+|fiveEa/2020     | 0.08703             | 0.00654      | 
+|fiveEa/2021     | 0.04628             | 0.00699      | 
