@@ -86,7 +86,7 @@ impl<const NUM_GEN: usize> TaggedDataPointFrame<NUM_GEN> {
             .0
             .iter()
             .enumerate()
-            .map(|(idx, x)| format!("{},{}\n", idx % x.dd_span as usize, x.to_string()))
+            .map(|(idx, x)| format!("{}{}\n", idx % x.dd_span as usize, x.to_string()))
             .collect::<Vec<String>>()
             .join("");
         format!("{}\n{}", headers, data)
@@ -132,6 +132,7 @@ pub fn multisim<const NUM_GEN: usize>(
     emergences: [ProbDist; NUM_GEN],
     mating_delay: MultiParam,
     egg_multiplier: impl Fn(f64) -> f64,
+    mortality: bool,
 ) -> TaggedDataPointFrame<NUM_GEN> {
     let multiframe: Vec<Vec<Vec<TaggedDataPointFrame<NUM_GEN>>>> = pop_0
         .clone()
@@ -156,6 +157,7 @@ pub fn multisim<const NUM_GEN: usize>(
                                     emergences.clone(),
                                     delay,
                                     egg_multiplier(delay),
+                                    mortality,
                                 ),
                                 pop as u32,
                                 detection,

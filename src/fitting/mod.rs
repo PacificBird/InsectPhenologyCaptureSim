@@ -82,6 +82,7 @@ pub fn fit_pop_growth<const N: usize>(fitparams: [FittingData; N]) -> [f64; N] {
                     JW_EMERGENCES,
                     fitparams[n].delay,
                     coefficient,
+                    true,
                 );
                 rm = calc_inherent_growth(
                     100_000.0,

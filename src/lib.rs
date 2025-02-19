@@ -30,10 +30,11 @@ pub fn simulate<const NUM_GEN: usize>(
     emergences: [ProbDist; NUM_GEN],
     mating_delay: f64,
     egg_multiplier: f64,
+    mortality: bool,
 ) -> DataPointFrame<NUM_GEN> {
     let mut pop_emerged = [0.0; NUM_GEN];
     let mut pop_active = [0.0; NUM_GEN];
-    let mut pop_captured = 0.0;
+    let mut pop_captured = [0.0; NUM_GEN];
     let mut avg_age = [0.0; NUM_GEN];
     let mut eggs = [0.0; NUM_GEN];
     eggs[0] = pop_0 as f64;
@@ -73,16 +74,18 @@ pub fn simulate<const NUM_GEN: usize>(
                         eggs_total[generation + 1] += egg_multiplier * mating_now;
                     }
 
-                    pop_active[generation] =
-                        pop_active[generation] * jw_mortality(pop_active[generation]);
+                    if mortality {
+                        pop_active[generation] =
+                            pop_active[generation] * jw_mortality(pop_active[generation]);
+                    }
                     pop_active_last[generation] = pop_active[generation];
                     let captured_now = pop_active[generation] * prob_detection;
-                    pop_captured += captured_now;
+                    pop_captured[generation] += captured_now;
                     pop_active[generation] -= captured_now;
                 }
 
                 DataPoint {
-                    pop_captured,
+                    pop_captured: pop_captured.clone(),
                     pop_active: pop_active.clone(),
                     pop_emerged: pop_emerged.clone(),
                     eggs: eggs.clone(),
@@ -129,6 +132,11 @@ pub fn jones_wiman_2012_2(x: f64) -> f64 {
     .max(0.0)
 }
 
+/// Mortality by degree day age curve as described in Jones & Wiman 2012
+fn jw_mortality(x: f64) -> f64 {
+    f64::exp(0.058 * (1.0 - f64::exp(0.0448 * x)))
+}
+
 /// Const collection of the Jones & Wiman 2012 emergences curves
 pub const JW_EMERGENCES: [ProbDist; 3] = [
     ProbDist::PDF(&jones_wiman_2012_0),
@@ -144,9 +152,4 @@ pub fn adjusted_logistic(steepness: f64, translation: f64, x: f64) -> f64 {
 /// "Eggs per mating event" function by mating delay, calculated by the [fitting] function
 pub fn egg_coefficient(delay: f64) -> f64 {
     (0.005147 * delay * delay) - (0.3227 * delay) + 36.02
-}
-
-/// Mortality by degree day curve as described in Jones & Wiman 2012
-fn jw_mortality(x: f64) -> f64 {
-    f64::exp(0.058 * (1.0 - f64::exp(0.0448 * x)))
 }
