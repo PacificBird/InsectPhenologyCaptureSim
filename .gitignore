@@ -4,3 +4,4 @@ simdata.csv
 /dense_trap_data
 /.ipynb_checkpoints
 /.jupyter_ystore.db
+.jupyter_ystore.db
