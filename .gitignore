@@ -5,3 +5,4 @@ simdata.csv
 /.ipynb_checkpoints
 /.jupyter_ystore.db
 .jupyter_ystore.db
+densities/misc_qgis_expr.txt

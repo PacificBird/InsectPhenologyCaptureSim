@@ -47,7 +47,7 @@
                 <Option type="QString" value="," name="delimiter"/>
                 <Option type="QString" value="&quot;Year&quot;" name="input"/>
                 <Option type="int" value="20" name="length"/>
-                <Option type="QString" value="field_name" name="name"/>
+                <Option type="QString" value="Year" name="name"/>
                 <Option type="int" value="0" name="precision"/>
                 <Option type="int" value="0" name="sub_type"/>
                 <Option type="int" value="10" name="type"/>
