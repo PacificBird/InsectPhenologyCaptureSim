@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/628125611.svg)](https://doi.org/10.5281/zenodo.16809301)
+
 ## Modeling the Relationship Between Phenology and Sampling Data as a Function of Sampling Efficacy
 
 This repository contains three interlocking parts:
